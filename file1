@@ -1,0 +1,50 @@
+resource "google_compute_autoscaler" "my_autoscaler" {
+  name  = "my-autoscaler"
+  zone  = "us-central1-b"
+  target = google_compute_instance_group_manager.default.id
+
+  autoscaling_policy {
+    max_replicas = 5
+    min_replicas = 1
+    cooldown_period = 60
+
+    metric {
+      name = "pubsub.googleapis.com/subscription/num_undelivered_messages"
+      filter = "resource.type = pubsub_subscription AND resource.label.subscription_id = our-subscription"
+      single_instance_assignment = 65535
+    }
+  }
+}
+
+resource "google_compute_instance_template" "default" {
+  name         = "my-instance-template"
+  machine_type = "e2-medium"
+  # Other configuration details (image, network, etc.)
+}
+
+resource "google_compute_instance_group_manager" "default" {
+  name = "my-igm"
+  zone = "us-central1-b"
+
+  version {
+    instance_template = google_compute_instance_template.default.id
+    name              = "primary"
+  }
+
+  target_pools = [google_compute_target_pool.default.id]
+  base_instance_name = "autoscaler-sample"
+}
+
+resource "google_compute_target_pool" "default" {
+  name = "my-target-pool"
+}
+
+data "google_compute_image" "debian_9" {
+  family  = "debian-11"
+  project = "debian-cloud"
+}
+
+provider "google-beta" {
+  region = "us-central1"
+  zone   = "us-central1-a"
+}
