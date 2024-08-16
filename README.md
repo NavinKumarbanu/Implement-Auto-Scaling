@@ -1,4 +1,3 @@
-
 ## Implementing Auto Scaling
 
 Auto scaling in Google Cloud Platform (GCP) refers to the ability to automatically adjust the number of compute resources allocated to your application based on demand. This ensures that your application has the necessary resources to handle current traffic while minimizing costs by not over-provisioning.
